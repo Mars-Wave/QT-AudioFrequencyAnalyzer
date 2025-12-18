@@ -18,14 +18,22 @@ qt_add_qml_module(AudioAnalyzerApp
     VERSION 1.0
     QML_FILES
         Main.qml
+        InputSelection.qml
+        Visualizer.qml
+        AudioToggles.qml
     SOURCES
-        src/AnalyzerInterface.h src/AnalyzerInterface.cpp
-        src/AudioEngine.h src/AudioEngine.cpp
-        src/inputs/MicrophoneInput.h src/inputs/MicrophoneInput.cpp
-
-        src/processing/ThreadedAudioFrequencyAnalyzer.h src/processing/ThreadedAudioFrequencyAnalyzer.cpp
-        src/processing/AudioFFTworker.h src/processing/AudioFFTworker.cpp
-        src/processing/AudioRMSworker.h src/processing/AudioRMSworker.cpp
+        src/AnalyzerInterface.h
+        src/AnalyzerInterface.cpp
+        src/AudioEngine.h
+        src/AudioEngine.cpp
+        src/inputs/MicrophoneInput.h
+        src/inputs/MicrophoneInput.cpp
+        src/processing/ThreadedAudioFrequencyAnalyzer.h
+        src/processing/ThreadedAudioFrequencyAnalyzer.cpp
+        src/processing/AudioFFTworker.h
+        src/processing/AudioFFTworker.cpp
+        src/processing/AudioRMSworker.h
+        src/processing/AudioRMSworker.cpp
         src/processing/ArithmeticCircularQueue.h
         src/pch.h
         src/inputs/FileInput.h
@@ -39,6 +47,8 @@ target_compile_options(AudioAnalyzerApp PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include${CMAKE_CURRENT_SOURCE_DIR}/src/FastQStrings.h>
     $<$<CXX_COMPILER_ID:MSVC>:/FI${CMAKE_CURRENT_SOURCE_DIR}/src/Constexprs.h>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include${CMAKE_CURRENT_SOURCE_DIR}/src/Constexprs.h>
+    $<$<CXX_COMPILER_ID:MSVC>:/FI${CMAKE_CURRENT_SOURCE_DIR}/src/debugOverride.h>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include${CMAKE_CURRENT_SOURCE_DIR}/src/debugOverride.h>
 )
 
 target_link_libraries(AudioAnalyzerApp PRIVATE Qt6::Quick Qt6::Multimedia)
