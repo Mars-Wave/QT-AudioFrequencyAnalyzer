@@ -1,7 +1,7 @@
 #include "AudioRMSworker.h"
 #include <cmath>
 #include <cstdint>
-#include <qdebug.h>
+#include <QDebug>
 
 void AudioRMSworker::initialize(uint16_t rmsChunkSize) {
     if (rmsChunkSize == 0) {
