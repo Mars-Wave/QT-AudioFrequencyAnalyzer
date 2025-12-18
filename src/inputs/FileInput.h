@@ -1,10 +1,9 @@
 #pragma once
-
 #include <QObject>
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QAudioBuffer>
-#include <QAudioBufferOutput> // New Qt6 replacement for QAudioProbe
+#include <QAudioBufferOutput>
 #include <QAudioFormat>
 #include <QUrl>
 
@@ -16,6 +15,8 @@ class FileInput : public QObject
     Q_PROPERTY(qint64 duration READ duration NOTIFY durationChanged)
     Q_PROPERTY(qint64 position READ position NOTIFY positionChanged)
     Q_PROPERTY(bool playing READ playing NOTIFY stateChanged)
+    Q_PROPERTY(float volume READ volume WRITE setVolume NOTIFY volumeChanged)
+    Q_PROPERTY(QUrl source READ source NOTIFY sourceChanged)
 
 public:
     explicit FileInput(QObject *parent = nullptr) : QObject(parent) {
@@ -23,24 +24,18 @@ public:
         m_output = new QAudioOutput(this);
 
         // 1. Setup Audio Output (Speakers)
-        // We attach this so the user can hear the music.
         m_player->setAudioOutput(m_output);
         m_output->setVolume(1.0);
 
         // 2. Setup Audio Buffer Output (Analysis)
-        // We define the format we WANT the analyzer to receive.
-        // QMediaPlayer will automatically convert source files to match this.
         QAudioFormat analysisFormat;
-        analysisFormat.setSampleRate(44100);        // Standard sample rate
-        analysisFormat.setChannelCount(2);          // Stereo
-        analysisFormat.setSampleFormat(QAudioFormat::Float); // Analyzer engine likely prefers Floats
+        analysisFormat.setSampleRate(44100);
+        analysisFormat.setChannelCount(2);
+        analysisFormat.setSampleFormat(QAudioFormat::Float);
 
         m_bufferOutput = new QAudioBufferOutput(analysisFormat, this);
-
-        // Connect the buffer output to the player
         m_player->setAudioBufferOutput(m_bufferOutput);
 
-        // Connect the signal to our slot
         connect(m_bufferOutput, &QAudioBufferOutput::audioBufferReceived,
                 this, &FileInput::onAudioBufferReceived);
 
@@ -48,6 +43,7 @@ public:
         connect(m_player, &QMediaPlayer::durationChanged, this, &FileInput::durationChanged);
         connect(m_player, &QMediaPlayer::positionChanged, this, &FileInput::positionChanged);
         connect(m_player, &QMediaPlayer::playbackStateChanged, this, &FileInput::stateChanged);
+        connect(m_player, &QMediaPlayer::sourceChanged, this, &FileInput::sourceChanged);
     }
 
     // --- Monitoring (Hearing the audio) ---
@@ -58,15 +54,23 @@ public:
         emit monitoringChanged();
     }
 
+    // --- Volume Control ---
+    float volume() const { return m_output->volume(); }
+    void setVolume(float vol) {
+        if (qFuzzyCompare(m_output->volume(), vol)) return;
+        m_output->setVolume(vol);
+        emit volumeChanged();
+    }
+
     // --- Playback Controls ---
     qint64 duration() const { return m_player->duration(); }
     qint64 position() const { return m_player->position(); }
     bool playing() const { return m_player->playbackState() == QMediaPlayer::PlayingState; }
+    QUrl source() const { return m_player->source(); }
 
     Q_INVOKABLE void setSource(const QUrl &url) {
         m_player->setSource(url);
     }
-
     Q_INVOKABLE void play() { m_player->play(); }
     Q_INVOKABLE void pause() { m_player->pause(); }
     Q_INVOKABLE void stop() { m_player->stop(); }
@@ -78,15 +82,16 @@ signals:
     void durationChanged();
     void positionChanged();
     void stateChanged();
+    void volumeChanged();
+    void sourceChanged();
 
 private slots:
     void onAudioBufferReceived(const QAudioBuffer &buffer) {
-        // Forward the normalized buffer to the analyzer
         emit audioBufferReady(buffer);
     }
 
 private:
     QMediaPlayer*       m_player;
-    QAudioOutput*       m_output;       // For the speakers
-    QAudioBufferOutput* m_bufferOutput; // For the visualizer
+    QAudioOutput*       m_output;
+    QAudioBufferOutput* m_bufferOutput;
 };

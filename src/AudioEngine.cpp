@@ -36,13 +36,11 @@ AudioEngine::AudioEngine(QObject *parent) : QObject(parent)
     QMetaObject::invokeMethod(m_analyzer, "configureAnalyzer", Qt::QueuedConnection,
                               Q_ARG(uint32_t, FFT_CHUNK_SIZE),
                               Q_ARG(uint16_t, m_desiredRmsChunkSize));
-
-    // Fix: Force push initial values so it works without moving sliders
     setNormalizationMode(AUDIO_NORMALIZATION_MODE::STABLE); // Default
     pushCustomRangesToAnalyzer();
 
     // Output Timer
-    m_outputTimer.setInterval(44);
+    m_outputTimer.setInterval(16); // 60 FPS
     m_outputTimer.setTimerType(Qt::PreciseTimer);
     connect(&m_outputTimer, &QTimer::timeout, this, &AudioEngine::onTick);
     m_outputTimer.start();

@@ -2,12 +2,14 @@
 #include <QObject>
 #include "AudioEngine.h"
 #include "inputs/MicrophoneInput.h"
-#include "inputs/FileInput.h" // <--- Updated Include
+#include "inputs/FileInput.h"
 #include "inputs/IpAudioInput.h"
 
 class AnalyzerInterface : public QObject
 {
     Q_OBJECT
+
+    // Mic, File, IP audio
     Q_PROPERTY(int inputMode READ inputMode WRITE setInputMode NOTIFY inputModeChanged)
 
     // Modules
@@ -15,18 +17,14 @@ class AnalyzerInterface : public QObject
     Q_PROPERTY(FileInput* fileInput READ fileInput CONSTANT)
     Q_PROPERTY(IpAudioInput* ipInput READ ipInput CONSTANT)
 
-    // Visual Data (Unchanged)
+    // Setting toggles
     Q_PROPERTY(float sensitivity READ sensitivity WRITE setSensitivity NOTIFY settingsChanged)
     Q_PROPERTY(float gain READ gain WRITE setGain NOTIFY settingsChanged)
     Q_PROPERTY(int normalizationMode READ normalizationMode WRITE setNormalizationMode NOTIFY settingsChanged)
+
+    // Visual Data
+    Q_PROPERTY(QList<qreal> bandValues READ bandValues NOTIFY statsChanged)
     Q_PROPERTY(float rms READ rms NOTIFY statsChanged)
-    Q_PROPERTY(float subBass READ subBass NOTIFY statsChanged)
-    Q_PROPERTY(float bass READ bass NOTIFY statsChanged)
-    Q_PROPERTY(float lowMid READ lowMid NOTIFY statsChanged)
-    Q_PROPERTY(float mid READ mid NOTIFY statsChanged)
-    Q_PROPERTY(float highMid READ highMid NOTIFY statsChanged)
-    Q_PROPERTY(float treble READ treble NOTIFY statsChanged)
-    Q_PROPERTY(float air READ air NOTIFY statsChanged)
 
 public:
     enum InputMode {
@@ -44,8 +42,10 @@ public:
 
     int inputMode() const { return m_inputMode; }
     Q_INVOKABLE void setInputMode(int mode);
+    Q_INVOKABLE float getBandLevel(int band) const;
 
-    // Getters for Stats
+    QList<qreal> bandValues() const;
+
     float rms() const { return m_rms; }
     float subBass() const { return m_subBass; }
     float bass() const { return m_bass; }

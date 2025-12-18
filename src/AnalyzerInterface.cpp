@@ -45,6 +45,33 @@ void AnalyzerInterface::setInputMode(int mode) {
     emit inputModeChanged();
 }
 
+float AnalyzerInterface::getBandLevel(int band) const
+{
+    switch (static_cast<AudioFFTworker::FrequencyBand>(band)) {
+    case AudioFFTworker::SubBass: return m_subBass;
+    case AudioFFTworker::Bass:    return m_bass;
+    case AudioFFTworker::LowMid:  return m_lowMid;
+    case AudioFFTworker::Mid:     return m_mid;
+    case AudioFFTworker::HighMid: return m_highMid;
+    case AudioFFTworker::Treble:  return m_treble;
+    case AudioFFTworker::Air:     return m_air;
+    default:                      return 0.0f;
+    }
+}
+
+QList<qreal> AnalyzerInterface::bandValues() const
+{
+    // Return a list constructed on the fly.
+    // Since this happens at UI framerate (e.g. 60fps), the overhead is negligible.
+    return {static_cast<qreal>(m_subBass),
+            static_cast<qreal>(m_bass),
+            static_cast<qreal>(m_lowMid),
+            static_cast<qreal>(m_mid),
+            static_cast<qreal>(m_highMid),
+            static_cast<qreal>(m_treble),
+            static_cast<qreal>(m_air)};
+}
+
 void AnalyzerInterface::updateInputRouting() {
     // Disconnect everything
     m_engine->disconnect(m_micInput, nullptr, nullptr, nullptr);

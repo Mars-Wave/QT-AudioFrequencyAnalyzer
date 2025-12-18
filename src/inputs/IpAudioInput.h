@@ -13,6 +13,7 @@ class IpAudioInput : public QObject
     Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(bool listening READ listening NOTIFY listeningChanged)
     Q_PROPERTY(bool monitoring READ monitoring WRITE setMonitoring NOTIFY monitoringChanged)
+    Q_PROPERTY(float volume READ volume WRITE setVolume NOTIFY volumeChanged)
 
 public:
     explicit IpAudioInput(QObject *parent = nullptr) : QObject(parent) {
@@ -21,7 +22,7 @@ public:
 
         // Output for Monitoring (Speakers)
         m_player->setAudioOutput(m_output);
-        m_output->setMuted(!m_monitoring); // Mute initially if monitoring is off
+        m_output->setMuted(!m_monitoring);
 
         // Output for Analysis
         QAudioFormat analysisFormat;
@@ -54,7 +55,6 @@ public:
         if(m_url == u) return;
         m_url = u;
         emit urlChanged();
-        // If we are already listening, restart with new URL
         if(m_listening) startListening();
     }
 
@@ -64,35 +64,37 @@ public:
     void setMonitoring(bool enable) {
         if(m_monitoring == enable) return;
         m_monitoring = enable;
-        m_output->setMuted(!enable); // Mute/Unmute
+        m_output->setMuted(!enable);
         emit monitoringChanged();
+    }
+
+    float volume() const { return m_output->volume(); }
+    void setVolume(float vol) {
+        if (qFuzzyCompare(m_output->volume(), vol)) return;
+        m_output->setVolume(vol);
+        emit volumeChanged();
     }
 
     Q_INVOKABLE void startListening() {
         if (m_url.isEmpty()) return;
 
-        // Smart URL handling
         QString finalUrl = m_url;
-
-        // If user just types "5555" or "1234", assume UDP on all interfaces
         bool isPort = false;
         m_url.toInt(&isPort);
+
         if (isPort) {
             finalUrl = QString("udp://127.0.0.1:%1").arg(m_url);
         }
-        // If user types "127.0.0.1:5555" without scheme, assume UDP
         else if (!m_url.contains("://")) {
             finalUrl = QString("udp://%1").arg(m_url);
         }
 
         m_player->setSource(QUrl(finalUrl));
-        // Trigger play
         m_player->play();
     }
 
     Q_INVOKABLE void stopListening() {
         m_player->stop();
-        // Unload source to release network resources
         m_player->setSource(QUrl());
     }
 
@@ -101,12 +103,13 @@ signals:
     void urlChanged();
     void listeningChanged();
     void monitoringChanged();
+    void volumeChanged();
 
 private:
     QMediaPlayer*       m_player;
-    QAudioOutput*       m_output;       // For speakers
-    QAudioBufferOutput* m_bufferOutput; // For analyzer
+    QAudioOutput*       m_output;
+    QAudioBufferOutput* m_bufferOutput;
     QString m_url = "http://stream.radiomast.io/my_stream";
     bool m_listening = false;
-    bool m_monitoring = false; // Default off to prevent feedback
+    bool m_monitoring = false;
 };

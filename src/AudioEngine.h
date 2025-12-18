@@ -9,7 +9,6 @@
 #include <cmath>
 #include <algorithm>
 
-// Include your provided header
 #include "processing/ThreadedAudioFrequencyAnalyzer.h"
 #include "processing/ArithmeticCircularQueue.h"
 
