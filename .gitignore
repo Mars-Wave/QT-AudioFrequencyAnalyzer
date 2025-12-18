@@ -1,0 +1,3 @@
+# Qt / QML tooling
+.qmlls.ini
+CMakeLists.txt.user
