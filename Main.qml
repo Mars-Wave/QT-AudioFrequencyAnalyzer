@@ -7,10 +7,9 @@ Window {
     width: 900
     height: 600
     visible: true
-    title: "Audio Analyzer Pro"
+    title: "Threaded Audio Frequency Analyzer"
     color: "#111111"
 
-    // The backend logic remains here as the single source of truth
     AnalyzerInterface {
         id: mainAnalyzer
         sensitivity: 0.5
