@@ -52,3 +52,9 @@ target_compile_options(AudioAnalyzerApp PRIVATE
 )
 
 target_link_libraries(AudioAnalyzerApp PRIVATE Qt6::Quick Qt6::Multimedia)
+
+if(WIN32)
+    set_target_properties(AudioAnalyzerApp PROPERTIES
+        WIN32_EXECUTABLE TRUE
+    )
+endif()
